@@ -1,85 +1,48 @@
 // We create our only state
 var mainState = {
     preload: function() {
-        game.load.image('player', 'assets/player.png');
-        game.load.image('wallV', 'assets/wallVertical.png');
-        game.load.image('wallH', 'assets/wallHorizontal.png');
-        
+        game.load.image('square', 'assets/square.png');
+        game.load.image('bg', 'assets/bg.png');
+        game.load.spritesheet('squares', 'assets/squares.png', 48, 48);
     },
     create: function() {
-        game.stage.backgroundColor = '#3498db';
-        game.physics.startSystem(Phaser.Physics.ARCADE);
+        game.stage.backgroundColor = '#000000';
         
-        
-        this.player = game.add.sprite(game.world.centerX, game.world.centerY, 'player');
-        this.player.anchor.setTo(0.5, 0.5);
-        game.physics.arcade.enable(this.player);
-        this.player.body.gravity.y = 500;
-        
-        this.cursor = game.input.keyboard.createCursorKeys();
-        
-        this.createWorld();
+        this.background = game.add.tileSprite(0, 0, 720, 720, "bg");
+
+        this.squares = game.add.group();
+        this.squares.createMultiple(169, 'squares', 4);
+        for (var i = 0; i<13; i++) {
+            for (var j = 0; j<13; j++) {
+                var s = this.squares.getFirstDead();
+                s.anchor.setTo(0.5, 0.5);
+                if ((i==6) && (j==6)) {
+                    s.frame = 3;
+                } else {
+                    s.frame = game.rnd.integerInRange(0, 2);
+                }
+                s.inputEnabled = true;
+                s.events.onInputDown.add(this.click, s);
+                s.reset((48*j)+72, (48*i)+72);
+            }
+        }
     },
     update: function() {
-        game.physics.arcade.collide(this.player, this.walls);
-        this.movePlayer();
-        if (!this.player.inWorld) {
-            this.playerDie();
-        }
-    },
-    movePlayer: function() {
-        // If the left arrow key is pressed
-        if (this.cursor.left.isDown) {
-            // Move the player to the left
-            this.player.body.velocity.x = -200;
-        }
-        // If the right arrow key is pressed
-        else if (this.cursor.right.isDown) {
-            // Move the player to the right
-            this.player.body.velocity.x = 200;
-        }
-        // If neither the right or left arrow key is pressed
-        else {
-            // Stop the player
-            this.player.body.velocity.x = 0;
-        }
-        // If the up arrow key is pressed and the player is touching the ground
-        if (this.cursor.up.isDown && this.player.body.touching.down) {
-            // Move the player upward (jump)
-            this.player.body.velocity.y = -320;
-        }
-    },
-    createWorld: function() {
-        // Create our wall group with Arcade physics
-        this.walls = game.add.group();
-        this.walls.enableBody = true;
         
-        // Create the 10 walls
-        game.add.sprite(0, 0, 'wallV', 0, this.walls); // Left
-        game.add.sprite(480, 0, 'wallV', 0, this.walls); // Right
-        game.add.sprite(0, 0, 'wallH', 0, this.walls); // Top left
-        game.add.sprite(300, 0, 'wallH', 0, this.walls); // Top right
-        game.add.sprite(0, 320, 'wallH', 0, this.walls); // Bottom left
-        game.add.sprite(300, 320, 'wallH', 0, this.walls); // Bottom right
-        game.add.sprite(-100, 160, 'wallH', 0, this.walls); // Middle left
-        game.add.sprite(400, 160, 'wallH', 0, this.walls); // Middle right
-        
-        var middleTop = game.add.sprite(100, 80, 'wallH', 0, this.walls);
-        middleTop.scale.setTo(1.5, 1);
-        
-        var middleBottom = game.add.sprite(100, 240, 'wallH', 0, this.walls);
-        middleBottom.scale.setTo(1.5, 1);
-        
-        // Set all the walls to be immovable
-        this.walls.setAll('body.immovable', true);
     },
-    playerDie: function() {
-        game.state.start('main');
-    },
-
+    click: function () {
+        if (this.frame == 2) { //elbow
+            this.angle += 90;
+            console.log(this.angle);
+        } else if (this.frame == 1) { //straight
+            this.angle += 90;
+        }
+    }
 };
+
+
 // We initialising Phaser
-var game = new Phaser.Game(500, 340, Phaser.AUTO, 'gameDiv');
+var game = new Phaser.Game(720, 720, Phaser.AUTO, 'gameDiv');
 // And finally we tell Phaser to add and start our 'main' state
 game.state.add('main', mainState);
 game.state.start('main');
